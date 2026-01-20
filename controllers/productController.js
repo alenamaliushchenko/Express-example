@@ -1,4 +1,18 @@
 import { products } from "../data.js";
+
+export const checkId = (req, res, next, id) => {
+    const index = products.findIndex(
+        (product) => product.id === +req.params.id
+    );
+    if (index === -1) {
+        res.status(404).json({
+            status: "not found",
+        });
+        return;
+    }
+    res.locals.index = index;
+    next();
+}
 export const getAllProducts =  (req, res) => {
     res.status(200).json({
         status: "success",
@@ -7,18 +21,9 @@ export const getAllProducts =  (req, res) => {
 }
 
 export const getProductById =  (req, res) => {
-    const indexToGet = products.findIndex(
-        (product) => product.id === +req.params.id
-    );
-    if (indexToGet === -1) {
-        res.status(404).json({
-            status: "not found",
-        });
-        return;
-    }
     res.status(200).json({
         status: "success",
-        data: { products: products[indexToGet] },
+        data: { products: products[res.locals.index] },
     });
 }
 
@@ -34,33 +39,15 @@ export const createProduct =  (req, res) => {
 }
 
 export const deleteProduct = (req, res) => {
-    const indexToRemove = products.findIndex(
-        (product) => product.id === +req.params.id
-    );
-    if (indexToRemove === -1) {
-        res.status(404).json({
-            status: "not found",             
-        });
-        return;
-    }
-    products.splice(indexToRemove, 1);
-    res.status(204).json({
+    products.splice(res.locals.index, 1);
+    res.status(200).json({
         status: "success",
     });
 };
 
 export const updateProduct = (req, res) => {
-    const indexToUpdate = products.findIndex(
-        (product) => product.id === +req.params.id
-    );
-    if (indexToUpdate === -1) {
-        res.status(404).json({
-            status: "not found",
-        });
-        return;
-    }
     const updatedProduct = Object.assign({ id: req.params.id }, req.body);
-    products.splice(indexToUpdate, 1, updatedProduct);
+    products.splice(res.locals.index, 0, updatedProduct);
     res.status(200).json({
         status: "success",
         data: { products: updatedProduct },
